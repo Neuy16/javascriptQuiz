@@ -1,5 +1,4 @@
-let time = 60;
-let timerEl = document.getElementById("time");
+
 const questions = [
     {
         question: "What is an array?",
@@ -43,7 +42,8 @@ const questions = [
         answer: "To listen for a specified action"
     },
 ];
-
+let time = 60;
+let timerEl = document.getElementById("time");
 let answer = "";
 let score = 0;
 let questionIndex = 0;
@@ -60,13 +60,14 @@ start.innerHTML = "Start Quiz";
 clearHighscores.addEventListener('click', clear);
 start.addEventListener('click', quiz);
 viewHighscores.addEventListener('click', highscores);
-function quiz() {
-    for (let i = 0; i < 4; i++) {
-        window['optionButtons' + i] = document.createElement("button");
-        document.body.children[1].children[1].children[i].appendChild(window['optionButtons' + i]);
-        window['optionButtons' + i].addEventListener('click', function () { checkAnswer(i) });
-    }
 
+for (let i = 0; i < 4; i++) {
+    window['optionButtons' + i] = document.createElement("button");
+    document.body.children[1].children[1].children[i].appendChild(window['optionButtons' + i]);
+    window['optionButtons' + i].addEventListener('click', function () { checkAnswer(i) });
+}
+
+function quiz() {
     generateQuestion(questionIndex);
     setTime();
 };
@@ -79,9 +80,10 @@ function setTime() {
 
         if (time <= 0) {
             clearInterval(timerInterval);
-            time = 0;
+            time = 60;
             initials = window.prompt("YOU'VE RUN OUT OF TIME!\n Score: " + score + "\n What are you initials?");
-            localStorage.setItem(initials, score);
+            localStorage.setItem(initials, JSON.stringify(score));
+            questionIndex = 0;
         }
 
     }, 1000);
@@ -98,6 +100,8 @@ function generateQuestion(index) {
         initials = window.prompt("YOU'VE COMPLETED THE QUIZ!! \n Score: " + score + "\n What are your initials?");
         localStorage.setItem(initials, score);
         clearInterval(timerInterval);
+        questionIndex = 0;
+        time = 60;
     }
 }
 
@@ -112,13 +116,20 @@ function checkAnswer(i) {
 }
 
 function highscores() {
-    let initialScores = [];
-    let localStorageSize = localStorage.length;
-    let keys = Object.keys(localStorage);
-    while (localStorageSize--) {
-        initialScores.push(localStorage.getItem(keys[localStorageSize]));
-    }
+    var initialScores = Object.keys(localStorage).map((key)=>[(key),localStorage[key]]);
+    initialScores.sort((a, b) => {
+        return b[1] - a[1];
+    });
+    displayScores(initialScores);
 }
+
+function displayScores(scores) {
+    let scoreButton = 0;
+    for (i = 0; i < 5; i++) {
+        scoreButton = document.getElementById('hs'+ i);
+    scores[i] ? scoreButton.innerHTML = scores[i][0]+' - '+ scores[i][1] : "Unfilled";
+    }
+};
 
 function clear() {
     localStorage.clear();
